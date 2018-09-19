@@ -1,0 +1,85 @@
+[
+    {
+        "phones": [
+            {
+                "clientId": 1,
+                "phoneType": "Mobile",
+                "phoneNumber": "0123456252"
+            },
+            {
+                "clientId": 1,
+                "phoneType": "Office",
+                "phoneNumber": "12345678"
+            }
+        ]
+    },
+    {"phones": [
+        {
+            "clientId": 2,
+            "phoneType": "Mobile",
+            "phoneNumber": "0123456252"
+        },
+        {
+            "clientId": 2,
+            "phoneType": "Landline",
+            "phoneNumber": "12345678"
+        }
+    ]
+    },
+    {
+                "phones": [
+                    {
+                        "clientId": 3,
+                        "phoneType": "Office",
+                        "phoneNumber": "0123456252"
+                    },
+                    {
+                        "clientId": 3,
+                        "phoneType": "Landline",
+                        "phoneNumber": "12345678"
+                    }
+                ]
+    },
+    {
+        "phones": [
+            {
+                "clientId": 4,
+                "phoneType": "Mobile",
+                "phoneNumber": "0123456252"
+            },
+            {
+                "clientId": 4,
+                "phoneType": "Mobile 2",
+                "phoneNumber": "12345678"
+            }
+        ]
+    },
+    {
+        "phones": [
+            {
+                "clientId": 5,
+                "phoneType": "Mobile",
+                "phoneNumber": "0123456252"
+            },
+            {
+                "clientId": 5,
+                "phoneType": "Landline",
+                "phoneNumber": "12345678"
+            }
+        ]
+    },
+    {
+        "phones": [
+            {
+                "clientId": 7,
+                "phoneType": "Mobile",
+                "phoneNumber": "0123456252"
+            },
+            {
+                "clientId": 7,
+                "phoneType": "Landline",
+                "phoneNumber": "12345678"
+            }
+        ]
+    }
+]
