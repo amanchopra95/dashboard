@@ -55,7 +55,7 @@ const Client = db.define('client', {
     },
     name: {type: Sequelize.DataTypes.STRING, allowNull: false },
     gender: {type: Sequelize.DataTypes.ENUM, values: ['M', 'F', 'O'] },
-    age: {type: Sequelize.DataTypes.INTEGER, allowNull: false },
+    age: {type: Sequelize.DataTypes.INTEGER, allowNull: true },
     date_of_joining: { type: Sequelize.DataTypes.DATEONLY, allowNull: false },
     end_date: { type: Sequelize.DataTypes.DATEONLY, allowNull: false },
     height: { type: Sequelize.DataTypes.STRING, allowNull: true },

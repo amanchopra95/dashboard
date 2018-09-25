@@ -1,5 +1,6 @@
 const { Client, Phone, db } = require('../../db/models/models');
 const router = require('express').Router();
+//const util = require('util');
 /* const cors = require('cors');
 
 const corsOptions = {
@@ -18,13 +19,125 @@ router.options('*', cors(corsOptions)); */
 
 
 router.get('/', (req, res) => {
-    Client.findAll({ include: [Phone] })
+    /* if (Object.keys(req.query).length !== 0) {
+        Client.findAll({ include: [Phone] })
+            .then((clients) => {
+                if (!clients) res.send("No clients");
+                res.setHeader('X-Total-Count', clients.length);
+                res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+                res.json(clients);
+            })
+    } */
+    if (req.query.q) {
+
+        Client.findAndCountAll({
+            order: [[req.query._sort, req.query._order]],
+            offset: +req.query._start,
+            limit: +req.query._end,
+            where: {
+                id: +req.query.q
+            }
+        })
+        .then((clients) => {
+            if (!clients) res.send("No clients");
+            const promise = clients.rows.map((client) => {
+                return Phone.findAll({
+                    where: {
+                        clientId: client.id
+                    }
+                })
+                    .then((data) => {
+                        client = client.toJSON();
+                        client.phones = data;
+                        return client;
+                    })
+            });
+            Promise.all(promise)
+                .then((value) => {
+                    res.setHeader('X-Total-Count', clients.count);
+                    res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+                    res.json(value);
+                });
+        });
+    }
+
+    console.log(req.query.phone, req.query)
+
+    if (req.query.phone) {
+        Phone.findOne({
+            where: {
+                phoneNumber: req.query.phone
+            }
+        })
+        .then((phone) => {
+            Client.findAll({
+                where: {
+                    id: phone.clientId
+                },
+                order: [[req.query._sort, req.query._order]],
+                offset: +req.query._start,
+                limit: +req.query._end
+            })
+                .then((client) => {
+                    //client = client.toJSON();
+                    client.phones = phone;
+                    res.setHeader('X-Total-Count', client.length);
+                    res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+                    res.json(client);
+                });
+        });
+    }
+
+    Client.findAndCountAll({
+        order: [[req.query._sort, req.query._order]],
+        offset: +req.query._start,
+        limit: +req.query._end,
+    })
+        .then((clients) => {
+            if (!clients) res.send("No clients");
+            const promise = clients.rows.map((client) => {
+                return Phone.findAll({
+                    where: {
+                        clientId: client.id
+                    }
+                })
+                .then((data) => {
+                    client = client.toJSON();
+                    client.phones = data;
+                    return client;
+                })
+            });
+            Promise.all(promise)
+                .then((value) => {
+                    res.setHeader('X-Total-Count', clients.count);
+                    res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+                    res.json(value);
+                });
+        });
+
+    /* const filter = JSON.parse(req.query.filter);
+    const range = JSON.parse(req.query.range);
+    const sort = JSON.parse(req.query.sort); 
+
+    if (Object.keys(filter).length !== 0) {
+        Client.findAndCountAll({ order: [[sort[0], sort[1]]], offset: +range[0], limit: +range[1] + 1, include: [Phone], where: {id : +filter.q} })
+            .then((data) => {
+                if (!data) res.send("No data");
+                res.setHeader('Content-Range', util.format("clients %d-%d/%d", range[0], range[1], data.count));
+                res.header("Access-Control-Expose-Headers", "Content-Range");
+                res.json(data.rows);
+            });
+    }
+
+    Client.findAndCountAll({ order: [[sort[0], sort[1]]], offset: +range[0], limit: +range[1] + 1, include: [Phone] })
         .then((data) => {
             if (!data) res.send("No data");
-            res.header('Content-Range', `client 0-9/${data.length}`);
+            res.setHeader('Content-Range', util.format("clients %d-%d/%d", range[0], range[1], data.count));
             res.header("Access-Control-Expose-Headers", "Content-Range");
-            res.json(data); 
-        });
+            res.json(data.rows);
+        }); */
+
+
 });
 
 router.get('/list', (req,res) => {
@@ -36,13 +149,15 @@ router.get('/list', (req,res) => {
         })
 })
 
-router.get('/phones', (req,res) => {
+/* router.get('/phones', (req, res) => {
     Phone.findAll()
         .then((phones) => {
-            if (!phones) res.json({"message": "No phone number"});
+            if (!phones) res.json({ "message": "No phone number" });
+            res.header('Content-Range', `client 0-9/${data.length}`);
+            res.header("Access-Control-Expose-Headers", "Content-Range");
             res.json(phones);
         });
-});
+}); */
 
 /**
  * Using Transactions to target both the models Phone and Client
@@ -72,7 +187,7 @@ router.post('/', (req, res) => {
 
 
 router.get('/:id', (req, res) => {
-    Client.findOne({where: {SNo: req.params.id}}, {include: [Phone]})
+    Client.findById(req.params.id, {include: [Phone]})
     .then((data) => res.json(data));
 })
 
@@ -82,7 +197,7 @@ router.get('/:id', (req, res) => {
  * @param String 
  * @return JSON of the phone Number
  */
-router.get('/number/:number', (req, res) => {
+/* router.get('/number/:number', (req, res) => {
     Phone.findOne({
         where: {
             phoneNumber: req.params.number
@@ -92,7 +207,7 @@ router.get('/number/:number', (req, res) => {
         if (!phone) res.send('Does not exist')
         res.json(phone.clientId);
     });
-});
+}); */
 
 /**
  * searching through SNo 
@@ -150,7 +265,7 @@ router.put('/edit/:id', (req, res) => {
         .catch((err) => res.send(err)); */
 });
 
-router.patch('/update/phoneNumber/:id', (req, res) => {
+/* router.patch('/update/phoneNumber/:id', (req, res) => {
     Phone.update({
         phoneNumber: req.body.phoneNumber
     },{
@@ -161,7 +276,7 @@ router.patch('/update/phoneNumber/:id', (req, res) => {
     .then((data) => {
         res.json(data);
     })
-})
+}) */
 
 router.put('/add/phone/:id', (req, res) => {
     return db.transaction((t) => {

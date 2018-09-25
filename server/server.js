@@ -8,7 +8,7 @@ const app = express();
 
 
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
     secret: 'This is some secret which is not to be revealed!',
     saveUninitialized: true,
@@ -23,6 +23,7 @@ app.use((req, res, next) => {
 });
 app.use('/', express.static(path.join(__dirname, '../client/public/')));
 app.use('/client', require('./routes/api/clients'));
+app.use('/phone', require('./routes/api/phone'));
 app.use('/login', require('./routes/login'));
 app.use('/user', require('./routes/api/users'));
 app.use('/logout', require('./routes/logout'));
