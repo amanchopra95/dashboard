@@ -1,16 +1,7 @@
 const { Client, Phone, db } = require('../../db/models/models');
 const router = require('express').Router();
 //const util = require('util');
-/* const cors = require('cors');
 
-const corsOptions = {
-    origin: '*',
-    optionsSuccessStatus: 200,
-    allowedHeaders: ['Content-Type'],
-    exposedHeaders: ['Content-Range']
-};
-router.use(cors(corsOptions));
-router.options('*', cors(corsOptions)); */
 /**
  * Will return a json response of the Client Model with
  * an attribute of phones for the Phone Model.
@@ -19,7 +10,7 @@ router.options('*', cors(corsOptions)); */
 
 
 router.get('/', (req, res) => {
-    /* if (Object.keys(req.query).length !== 0) {
+    if (Object.keys(req.query).length === 0) {
         Client.findAll({ include: [Phone] })
             .then((clients) => {
                 if (!clients) res.send("No clients");
@@ -27,7 +18,7 @@ router.get('/', (req, res) => {
                 res.header('Access-Control-Expose-Headers', 'X-Total-Count');
                 res.json(clients);
             })
-    } */
+    }
     if (req.query.q) {
 
         Client.findAndCountAll({
@@ -61,8 +52,6 @@ router.get('/', (req, res) => {
         });
     }
 
-    console.log(req.query.phone, req.query)
-
     if (req.query.phone) {
         Phone.findOne({
             where: {
@@ -79,6 +68,7 @@ router.get('/', (req, res) => {
                 limit: +req.query._end
             })
                 .then((client) => {
+                    console.log(typeof client);
                     //client = client.toJSON();
                     client.phones = phone;
                     res.setHeader('X-Total-Count', client.length);
@@ -187,8 +177,7 @@ router.post('/', (req, res) => {
 
 
 router.get('/:id', (req, res) => {
-    Client.findById(req.params.id, {include: [Phone]})
-    .then((data) => res.json(data));
+    Client.findById(req.params.id, {include: [Phone]}).then((data) => res.json(data));
 })
 
 
@@ -235,34 +224,45 @@ router.get('/SNo/:id', (req, res) => {
  */
 
 router.put('/edit/:id', (req, res) => {
-    Client.findById(req.params.id, {include: [Phone]})
-        .then((client) => {
-            client = Client.build(req.body);
-            db.transaction((t) => {
-                const phones = Phone.build(client.phones);
-                client.phones = phones;
-                const setPhones = client.phones;
+    const clientData = req.body;
+    const phoneData = clientData.phones;
 
-                return Promise.all([client.save(), setPhones]);
+    Client.findById(req.params.id, {include: [Phone]})
+    .then((client) => {
+        const phoneDelta = getDelta(client.phones, phoneData);
+        if (!client) throw new Error("Client Not Found");
+
+        return db.transaction((t) => {
+
+            return Promise.all([
+                phoneDelta.added.map(phone => {
+                    return Phone.create(phone, { transaction: t });
+                }),
+                phoneDelta.changed.map(changedPhoneData => {
+                    const phone = phoneData.find(_phone => _phone.id === changedPhoneData.id);
+                    console.log(phone);
+                    return Phone.update(phone, {where: {id: phone.id}}, { transaction: t });
+                }),
+                phoneDelta.deleted.map(phone => {
+                    return phone.destroy({ transaction: t });
+                })
+            ])
+                .then(() => {
+                    client.update(req.body, { transaction: t })
+                        .then((client) => res.json(client));
+                })
+                .catch((err) => res.json(err));
+        });
+            /* .then((updatedClient) => {
+                if (!updatedClient) res.send("Success");
             })
-            .then(() => res.send("Task Completed"))
-            .catch((err) => res.send({"message": "Error Occured", err}));
-        })
-    /* return db.transaction((t) => {
-        Client.findById(req.params.id, {include: [Phone]})
-            .then((client) => {
-                const phones = Phone.build(updateClient.phones);
-                delete updateClient.phones;
-                client = Client.build(updateClient);
-                return client
-                    .save()
-                    .then((updatedClient) => {
-                        if (updatedClient) phones.save().catch((err) => res.json(err));
-                    })
-                    .catch((err) => res.json(err));
-            });
-        })
-        .catch((err) => res.send(err)); */
+            .catch((err) => {
+                console.log(err);
+                res.json(err);
+            }); */
+    });
+
+    
 });
 
 /* router.patch('/update/phoneNumber/:id', (req, res) => {
@@ -298,39 +298,20 @@ router.delete('/delete/:id', (req, res) => {
     });
 });
 
+function getDelta (source, updated) {
+    let added = updated.filter(updatedItem => source.find(sourceItem => sourceItem.id === +updatedItem.id) === undefined);
+    console.log("Added",added);
+    let changed = source.filter(sourceItem => updated.find(updatedItem => +updatedItem.id === sourceItem.id) !== undefined);
+    console.log("Changed", changed);
+    let deleted = source.filter(sourceItem => updated.find(updatedItem => +updatedItem.id === sourceItem.id) === undefined);
+    console.log("Deleted", deleted);
+    const delta = {
+        added: added,
+        changed: changed,
+        deleted: deleted
+    };
+
+    return delta;
+}
+
 module.exports = router;
-
-/* const updateClientTable = Client.update({
-        name: req.body.name,
-        age: req.body.age,
-        gender: req.body.gender,
-        date_of_joining: req.body.date_of_joining,
-        end_date: req.body.end_date,
-        height: req.body.height,
-        weight: req.body.weight,
-        package: req.body.package,
-        blood_group: req.body.blood_group,
-        paid: req.body.paid,
-        balance: req.body.balance,
-        address: req.body.address,
-        food_habit: req.body.food_habit,
-        ref: req.body.ref,
-        looking_for: req.body.looking_for,
-        visit: req.body.visit,
-    }, {
-        where: {
-            id: req.params.id
-        }
-    });
-
-    const updatePhoneTable = Phone.update({
-        phoneType: req.body.phones.phoneType,
-        phoneNumber: req.body.phones.phoneNumber
-    }, {
-        where: {
-            clientId: req.params.id
-        }
-    });
-
-    Promise.all([updateClientTable, updatePhoneTable])
-        .then((data) => res.json(data)) */
