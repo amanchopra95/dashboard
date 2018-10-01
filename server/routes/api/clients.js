@@ -1,5 +1,6 @@
 const { Client, Phone, db } = require('../../db/models/models');
 const router = require('express').Router();
+const passport = require('../../passport/passport');
 //const util = require('util');
 
 /**
@@ -9,7 +10,7 @@ const router = require('express').Router();
 
 
 
-router.get('/', (req, res) => {
+router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
     if (Object.keys(req.query).length === 0) {
         Client.findAll({ include: [Phone] })
             .then((clients) => {
@@ -68,7 +69,6 @@ router.get('/', (req, res) => {
                 limit: +req.query._end
             })
                 .then((client) => {
-                    console.log(typeof client);
                     //client = client.toJSON();
                     client.phones = phone;
                     res.setHeader('X-Total-Count', client.length);
@@ -155,7 +155,7 @@ router.get('/list', (req,res) => {
  * call rollback which will remove the initial entry to database.
  */
 
-router.post('/', (req, res) => {
+router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
     return db.transaction((t) => {
         return Client.create(req.body, {include: [Phone]}, {transaction: t})
             .then((client) => {
@@ -176,7 +176,7 @@ router.post('/', (req, res) => {
  */
 
 
-router.get('/:id', (req, res) => {
+router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     Client.findById(req.params.id, {include: [Phone]}).then((data) => res.json(data));
 })
 
@@ -223,7 +223,7 @@ router.get('/SNo/:id', (req, res) => {
  * @return Boolean
  */
 
-router.put('/edit/:id', (req, res) => {
+router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
     const clientData = req.body;
     const phoneData = clientData.phones;
 
@@ -247,19 +247,19 @@ router.put('/edit/:id', (req, res) => {
                     return phone.destroy({ transaction: t });
                 })
             ])
-                .then(() => {
-                    client.update(req.body, { transaction: t })
-                        .then((client) => res.json(client));
+                .then((value) => {
+                    client.update(req.body, { transaction: t });
                 })
                 .catch((err) => res.json(err));
-        });
-            /* .then((updatedClient) => {
+        })
+            .then((updatedClient) => {
                 if (!updatedClient) res.send("Success");
+                res.json(updatedClient);
             })
             .catch((err) => {
                 console.log(err);
                 res.json(err);
-            }); */
+            });
     });
 
     

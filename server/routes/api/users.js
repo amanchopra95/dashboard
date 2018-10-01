@@ -10,7 +10,7 @@ route.get('/', (req, res) => {
         });
 });
 
-route.post('/register', (req, res) => {
+route.post('/', (req, res) => {
     pass2hash(req.body.password)
     .then((hash) => {
         User.create({
