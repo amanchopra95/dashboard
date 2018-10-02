@@ -70,7 +70,8 @@ const Client = db.define('client', {
     ref: { type: Sequelize.DataTypes.STRING, allowNull: true },
     address: { type: Sequelize.DataTypes.STRING, allowNull: true },
     email: { type: Sequelize.DataTypes.STRING, allowNull: true },
-    DOB: { type: Sequelize.DataTypes.DATEONLY, allowNull: true }
+    DOB: { type: Sequelize.DataTypes.DATEONLY, allowNull: true },
+    /* is_active: { type: Sequelize.DataTypes.BOOLEAN, allowNull: false, defaultValue: false } */
 });
 
 Client.hasMany(Phone, {foreignKey: 'clientId'});
