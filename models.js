@@ -75,6 +75,7 @@ const Client = db.define('client', {
 });
 
 Client.hasMany(Phone, {foreignKey: 'clientId'});
+Phone.belongsTo(Client, {as: 'Client', foreignKey: 'clientId'});
 
 db.sync()
     .then(() => console.log('Database connected'));

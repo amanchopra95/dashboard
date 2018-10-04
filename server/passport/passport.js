@@ -1,11 +1,13 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const passportJWT = require('passport-jwt');
-const { User } = require('../db/models/models');
+const models = require('../db/models');
 const { compare2hash } = require('../utils/password');
 
 const ExtractJWT = passportJWT.ExtractJwt;
 const StrategyJWT = passportJWT.Strategy;
+
+const User = models.user;
 
 passport.serializeUser((user, done) => {
     if (!user.id) {

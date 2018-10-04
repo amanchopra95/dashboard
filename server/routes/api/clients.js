@@ -1,7 +1,11 @@
-const { Client, Phone, db } = require('../../db/models/models');
+const models = require('../../db/models');
+//const Client = require('../../db/models/client');
+//const Phone = require('../../db/models/phone');
 const router = require('express').Router();
 const passport = require('../../passport/passport');
 //const util = require('util');
+const Client = models.client;
+const Phone = models.phone;
 
 /**
  * Will return a json response of the Client Model with
@@ -9,10 +13,9 @@ const passport = require('../../passport/passport');
  */
 
 
-
 router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
     if (Object.keys(req.query).length === 0) {
-        Client.findAll({ include: [Phone] })
+        models.client.findAll({ include: [Phone] })
             .then((clients) => {
                 if (!clients) res.send("No clients");
                 res.setHeader('X-Total-Count', clients.length);
@@ -134,8 +137,8 @@ router.get('/list', (req,res) => {
     Client.findAll({include: [Phone]})
         .then((data) => {
             if (!data) res.send("No data");
-            res.setHeader('client/list', );
-            res.json([...data]);
+            //res.setHeader('client/list', );
+            res.json(data);
         })
 })
 
@@ -156,7 +159,7 @@ router.get('/list', (req,res) => {
  */
 
 router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
-    return db.transaction((t) => {
+    return models.sequelize.transaction((t) => {
         return Client.create(req.body, {include: [Phone]}, {transaction: t})
             .then((client) => {
                 if (!client) throw new Error('Problem');
@@ -232,10 +235,11 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
         const phoneDelta = getDelta(client.phones, phoneData);
         if (!client) throw new Error("Client Not Found");
 
-        return db.transaction((t) => {
+        return models.sequelize.transaction((t) => {
 
             return Promise.all([
                 phoneDelta.added.map(phone => {
+                    phone.clientId = client.id; //Add FK client Id before inserting to db.
                     return Phone.create(phone, { transaction: t });
                 }),
                 phoneDelta.changed.map(changedPhoneData => {
@@ -279,7 +283,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
 }) */
 
 router.put('/add/phone/:id', (req, res) => {
-    return db.transaction((t) => {
+    return models.sequelize.transaction((t) => {
         return Client.findById(req.params.id, {include: {model : [Phone]}})
             .then((client) => {
                 

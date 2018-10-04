@@ -1,8 +1,9 @@
 const route = require('express').Router();
 const { compare2hash } = require('../utils/password');
-const { User } = require('../db/models/models');
+const models = require('../db/models');
 const jwt = require('jsonwebtoken');
 
+const User = models.user;
 
 route.post('/',(req, res) => {
     let username = req.body.username;

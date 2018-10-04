@@ -1,8 +1,10 @@
 const route = require('express').Router();
-const { User } = require('../../db/models/models');
+const models = require('../../db/models');
 const { pass2hash } = require('../../utils/password');
 const passport = require('../../passport/passport');
- 
+
+const User = models.user; 
+
 route.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
 
     User.findAndCountAll({

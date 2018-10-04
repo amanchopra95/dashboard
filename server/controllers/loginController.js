@@ -1,5 +1,5 @@
 const { compare2hash } = require('../utils/password');
-const { User } = require('../db/models/models');
+const User = require('../db/models/user');
 const jwt = require('jsonwebtoken');
 
 function authenticate(username, password) {
