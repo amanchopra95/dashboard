@@ -20,8 +20,15 @@ route.post('/',(req, res) => {
                     .then((match) => {
                         if (!match) res.status(401).json({mssage: "User or password does not match"});
                         user = user.toJSON();
-                        const token = jwt.sign(user, 'This is secret');
-                        res.json({ user, token });
+                        tokenUser = {
+                            username: user.username,
+                            role: user.role,
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            id: user.id
+                        };
+                        const token = jwt.sign(tokenUser, process.env.JWT_SECRET);
+                        res.json({ tokenUser, token });
                     })
                     .catch(err => console.log(err));
             }

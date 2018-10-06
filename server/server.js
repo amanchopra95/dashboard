@@ -2,8 +2,7 @@ const express = require('express');
 const path = require('path')
 const session = require('express-session');
 const passport = require('./passport/passport');
-
-
+require('dotenv').config();
 const app = express();
 
 
@@ -31,5 +30,5 @@ app.use('/logout', require('./routes/logout'));
 
 app.listen(process.env.PORT || 5000, () => {
     const port = process.env.PORT || 5000;
-    console.log("Server is on Port 5000" + port);
+    console.log("Server is on Port" + port);
 });

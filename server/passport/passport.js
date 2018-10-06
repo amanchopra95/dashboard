@@ -51,7 +51,7 @@ passport.use(new LocalStrategy((username, password, done) => {
 
 passport.use(new StrategyJWT({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-    secretOrKey: 'This is secret' 
+    secretOrKey: process.env.JWT_SECRET 
 }, function (jwtPayload, done) {
     User.findById(jwtPayload.id)
         .then(user => {

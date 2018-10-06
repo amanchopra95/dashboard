@@ -1,8 +1,8 @@
 const path = require('path');
-
+const log = () => {console.log("Squelizerc");}
 module.exports = {
-  'config': path.resolve('./server/db/', 'config/config.json'),
+  'config': path.resolve('./server/db/', 'config/config.js'),
   'models-path': path.resolve('./server/db/', 'models'),
   'seeders-path': path.resolve('./server/db/', 'seeders'),
-  'migrations-path': path.resolve('./server/db/', 'migrations')
+  'migrations-path': path.resolve('./server/db/', 'migrations'),
 }
