@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     weight: { type: DataTypes.STRING, allowNull: true },
     package: { type: DataTypes.ENUM, values: ['1', '3', '6'], allowNull: false },
     blood_group: { type: DataTypes.ENUM, values: ['A+', 'B+', 'AB+', 'A-', 'B-', 'AB-', 'O+', 'O-'], allowNull: true },
+    amount: { type: DataTypes.STRING, allowNull: false, defaultValue: 0 },
     paid: { type: DataTypes.STRING, allowNull: false },
     balance: { type: DataTypes.STRING, allowNull: true },
     looking_for: { type: DataTypes.ENUM, values: ['Weight Loss', 'Weight Gain', 'Healthy Plan'], allowNull: true },

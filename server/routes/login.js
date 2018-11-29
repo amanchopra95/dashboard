@@ -18,7 +18,7 @@ route.post('/',(req, res) => {
             } else {
                 compare2hash(req.body.password, user.password)
                     .then((match) => {
-                        if (!match) res.status(401).json({mssage: "User or password does not match"});
+                        if (!match) res.status(401).json({message: "User or password does not match"});
                         user = user.toJSON();
                         tokenUser = {
                             username: user.username,

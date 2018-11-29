@@ -81,55 +81,49 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
         });
     }
 
-    Client.findAndCountAll({
-        order: [[req.query._sort, req.query._order]],
-        offset: +req.query._start,
-        limit: +req.query._end,
-    })
-        .then((clients) => {
-            if (!clients) res.send("No clients");
-            const promise = clients.rows.map((client) => {
-                return Phone.findAll({
-                    where: {
-                        clientId: client.id
-                    }
-                })
-                .then((data) => {
-                    client = client.toJSON();
-                    client.phones = data;
-                    return client;
-                })
-            });
-            Promise.all(promise)
-                .then((value) => {
-                    res.setHeader('X-Total-Count', clients.count);
-                    res.header('Access-Control-Expose-Headers', 'X-Total-Count');
-                    res.json(value);
+    if (req.query._end === '1000' && req.query._start === '0') {
+
+        Client.findAndCountAll({
+            order: [[req.query._sort, req.query._order]],
+            offset: +req.query._start,
+            include: [Phone]
+        })
+            .then((clients) => {
+                if (!clients) res.status(404).send("Not Found");
+                res.setHeader('X-Total-Count', clients.count);
+                res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+                res.json(clients.rows);
+            })
+    } else {
+
+        Client.findAndCountAll({
+            order: [[req.query._sort, req.query._order]],
+            offset: +req.query._start,
+            limit: +req.query._end,
+        })
+            .then((clients) => {
+                if (!clients) res.status(404).send("Not Found");
+                const promise = clients.rows.map((client) => {
+                    return Phone.findAll({
+                        where: {
+                            clientId: client.id
+                        }
+                    })
+                        .then((data) => {
+                            client = client.toJSON();
+                            client.phones = data;
+                            return client;
+                        })
                 });
-        });
-
-    /* const filter = JSON.parse(req.query.filter);
-    const range = JSON.parse(req.query.range);
-    const sort = JSON.parse(req.query.sort); 
-
-    if (Object.keys(filter).length !== 0) {
-        Client.findAndCountAll({ order: [[sort[0], sort[1]]], offset: +range[0], limit: +range[1] + 1, include: [Phone], where: {id : +filter.q} })
-            .then((data) => {
-                if (!data) res.send("No data");
-                res.setHeader('Content-Range', util.format("clients %d-%d/%d", range[0], range[1], data.count));
-                res.header("Access-Control-Expose-Headers", "Content-Range");
-                res.json(data.rows);
+                Promise.all(promise)
+                    .then((value) => {
+                        res.setHeader('X-Total-Count', clients.count);
+                        res.header('Access-Control-Expose-Headers', 'X-Total-Count');
+                        res.json(value);
+                    })
+                    .catch(err => console.log(err));
             });
     }
-
-    Client.findAndCountAll({ order: [[sort[0], sort[1]]], offset: +range[0], limit: +range[1] + 1, include: [Phone] })
-        .then((data) => {
-            if (!data) res.send("No data");
-            res.setHeader('Content-Range', util.format("clients %d-%d/%d", range[0], range[1], data.count));
-            res.header("Access-Control-Expose-Headers", "Content-Range");
-            res.json(data.rows);
-        }); */
-
 
 });
 
@@ -159,10 +153,12 @@ router.get('/list', (req,res) => {
  */
 
 router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+    console.log(req.body);
     return models.sequelize.transaction((t) => {
         return Client.create(req.body, {include: [Phone]}, {transaction: t})
             .then((client) => {
                 if (!client) throw new Error('Problem');
+                console.log('client', client);
                 res.json(client);
             });
     })
