@@ -1,7 +1,7 @@
 {
   "name": "dashboard",
   "version": "1.0.0",
-  "description": "Dashboard for Just Diet",
+  "description": "Dashboard",
   "main": "server.js",
   "scripts": {
     "start": "node ./server/server.js",
